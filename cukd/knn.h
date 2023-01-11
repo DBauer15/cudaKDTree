@@ -1,4 +1,19 @@
 // ======================================================================== //
+// Copyright 2022-2022 David Bauer                                          //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+// ======================================================================== //
+// ======================================================================== //
 // Copyright 2022-2022 Ingo Wald                                            //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
@@ -126,7 +141,9 @@ namespace cukd {
       of the maximum distance among the k closest elements, if at k
       were found; or the _square_ of the max search radius provided
       for the query */
-  template<typename point_t, typename CandidateList>
+  template<typename point_t, 
+           typename CandidateList,
+           typename PointInterface>
   inline __device__
   float knn(CandidateList &currentlyClosest,
             point_t queryPoint,
@@ -155,7 +172,7 @@ namespace cukd {
       const int  child = 2*curr+1;
       const bool from_child = (prev >= child);
       if (!from_child) {
-        float dist2 = sqr_distance(queryPoint,d_nodes[curr]);
+        float dist2 = sqr_distance(PointInterface::get(queryPoint),PointInterface::get(d_nodes[curr]));
         if (dist2 <= maxRadius2) {
           currentlyClosest.push(dist2,curr);
           maxRadius2 = currentlyClosest.maxRadius2();
@@ -164,7 +181,7 @@ namespace cukd {
 
       const auto &curr_node = d_nodes[curr];
       const int   curr_dim = BinaryTree::levelOf(curr) % point_traits<point_t>::numDims;
-      const float curr_dim_dist = (&queryPoint.x)[curr_dim] - (&curr_node.x)[curr_dim];
+      const float curr_dim_dist = PointInterface::get(queryPoint, curr_dim) - PointInterface::get(curr_node, curr_dim);
       const int   curr_side = curr_dim_dist > 0.f;
       const int   curr_close_child = 2*curr + 1 + curr_side;
       const int   curr_far_child   = 2*curr + 2 - curr_side;
@@ -210,4 +227,3 @@ namespace cukd {
   }
   
 } // ::cukd
-
