@@ -173,7 +173,7 @@ namespace cukd {
       const bool from_child = (prev >= child);
       if (!from_child) {
         float dist2 = sqr_distance(PointInterface::get(queryPoint),PointInterface::get(d_nodes[curr]));
-        if (dist2 <= maxRadius2) {
+        if (dist2 <= maxRadius2 && PointInterface::valid(d_nodes[curr], queryPoint)) {
           currentlyClosest.push(dist2,curr);
           maxRadius2 = currentlyClosest.maxRadius2();
         }
